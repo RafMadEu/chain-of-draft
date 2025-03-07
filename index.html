@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chain of Draft (Multistyle)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        textarea { width: 100%; height: 100px; margin-bottom: 10px; }
+        select, button { padding: 10px; margin-top: 10px; }
+        button { background-color: #007BFF; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .output { margin-top: 20px; padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+
+    <h2>Chain of Draft (Multistyle)</h2>
+    <p>Écris ton texte de départ :</p>
+    <textarea id="inputText"></textarea>
+
+    <p>Choisis un style :</p>
+    <select id="styleSelect">
+        <option value="formel">Formel</option>
+        <option value="poetique">Poétique</option>
+        <option value="journalistique">Journalistique</option>
+        <option value="juridique">Juridique</option>
+        <option value="informel">Informel</option>
+    </select>
+
+    <button onclick="generateDrafts()">Prompt</button>
+
+    <h3>Versions améliorées :</h3>
+    <div id="outputContainer"></div>
+
+    <script>
+        function generateDrafts() {
+            let inputText = document.getElementById("inputText").value.trim();
+            let style = document.getElementById("styleSelect").value;
+
+            if (inputText === "") {
+                alert("Écris un texte avant de générer les brouillons !");
+                return;
+            }
+
+            fetch("http://127.0.0.1:5000/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ text: inputText, style: style })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let outputContainer = document.getElementById("outputContainer");
+                outputContainer.innerHTML = "";
+                
+                if (data.drafts) {
+                    data.drafts.forEach(draft => {
+                        let paragraph = document.createElement("p");
+                        paragraph.innerHTML = draft;
+                        outputContainer.appendChild(paragraph);
+                    });
+                } else {
+                    outputContainer.innerHTML = "<p>Erreur lors de la génération.</p>";
+                }
+            })
+            .catch(error => {
+                console.error("Erreur :", error);
+            });
+        }
+    </script>
+
+</body>
+</html>
