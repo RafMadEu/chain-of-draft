@@ -3,73 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chain of Draft (Multistyle)</title>
+    <title>Chain of Draft</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        textarea { width: 100%; height: 100px; margin-bottom: 10px; }
-        select, button { padding: 10px; margin-top: 10px; }
-        button { background-color: #007BFF; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        .output { margin-top: 20px; padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+        }
+        select, button {
+            margin-top: 10px;
+        }
+        .drafts {
+            margin-top: 20px;
+        }
+        .draft {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-
-    <h2>Chain of Draft (Multistyle)</h2>
-    <p>Écris ton texte de départ :</p>
-    <textarea id="inputText"></textarea>
-
-    <p>Choisis un style :</p>
-    <select id="styleSelect">
+    <h1>Chain of Draft</h1>
+    <textarea id="text-input" placeholder="Écris ton texte ici..."></textarea><br>
+    <label for="style-select">Choisis un style :</label>
+    <select id="style-select">
         <option value="formel">Formel</option>
-        <option value="poetique">Poétique</option>
+        <option value="poétique">Poétique</option>
         <option value="journalistique">Journalistique</option>
         <option value="juridique">Juridique</option>
         <option value="informel">Informel</option>
-    </select>
-
+    </select><br>
     <button onclick="generateDrafts()">Prompt</button>
 
-    <h3>Versions améliorées :</h3>
-    <div id="outputContainer"></div>
+    <div class="drafts" id="drafts-container"></div>
 
     <script>
-        function generateDrafts() {
-            let inputText = document.getElementById("inputText").value.trim();
-            let style = document.getElementById("styleSelect").value;
+        async function generateDrafts() {
+            const text = document.getElementById('text-input').value;
+            const style = document.getElementById('style-select').value;
 
-            if (inputText === "") {
-                alert("Écris un texte avant de générer les brouillons !");
+            if (!text.trim()) {
+                alert("Le texte ne peut pas être vide.");
                 return;
             }
 
-            fetch("http://127.0.0.1:5000/generate", {
-                method: "POST",
+            const response = await fetch('http://127.0.0.1:5000/generate', {
+                method: 'POST',
                 headers: {
-                    "Content-Type": "application/json"
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ text: inputText, style: style })
-            })
-            .then(response => response.json())
-            .then(data => {
-                let outputContainer = document.getElementById("outputContainer");
-                outputContainer.innerHTML = "";
-                
-                if (data.drafts) {
-                    data.drafts.forEach(draft => {
-                        let paragraph = document.createElement("p");
-                        paragraph.innerHTML = draft;
-                        outputContainer.appendChild(paragraph);
-                    });
-                } else {
-                    outputContainer.innerHTML = "<p>Erreur lors de la génération.</p>";
-                }
-            })
-            .catch(error => {
-                console.error("Erreur :", error);
+                body: JSON.stringify({ text: text, style: style }),
+            });
+
+            if (!response.ok) {
+                alert("Erreur lors de la génération des brouillons.");
+                return;
+            }
+
+            const data = await response.json();
+            const draftsContainer = document.getElementById('drafts-container');
+            draftsContainer.innerHTML = '';
+
+            data.drafts.forEach(draft => {
+                const draftDiv = document.createElement('div');
+                draftDiv.className = 'draft';
+                draftDiv.innerHTML = draft;
+                draftsContainer.appendChild(draftDiv);
             });
         }
     </script>
-
 </body>
 </html>
+
